@@ -1,3 +1,6 @@
+# exclude
+test.js
+
 # compiled output
 /dist
 /node_modules
