@@ -15,3 +15,9 @@ for (let i = 1; i < n + 1; i++) {
 // 빅오 표기법에서 n은 입력의 개수를 나타낸다.
 console.log('O(n)', sum); // 반복이 n에 비례함을 나타냄
 console.log('O(1)', (n * (n + 1)) / 2); // 빅오의 1
+console.log(
+  Array(100)
+    .fill()
+    .map((arr, i) => i + 1)
+    .reduce((prev, cur) => prev + cur),
+);

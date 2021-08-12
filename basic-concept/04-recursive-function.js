@@ -44,3 +44,4 @@ const s = 'imseongtae';
 console.log('f(s)', f(s));
 console.log('lf(s)', lf(s));
 console.log('rf(s)', rf(s));
+console.log(s.match(/\w/g).reduce((prev, cur) => cur + prev));

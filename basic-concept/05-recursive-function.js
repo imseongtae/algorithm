@@ -33,3 +33,8 @@ const number = '44822';
 console.log('lf(number)', lf(number));
 console.log('lf2(number)', lf2(number));
 console.log('rf(number)', rf(number));
+console.log(
+  number
+    .match(/\w/g)
+    .reduce((prev, cur) => parseInt(prev, 10) + parseInt(cur, 10)),
+);
