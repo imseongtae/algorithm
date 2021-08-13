@@ -40,3 +40,9 @@ function m(n) {
 console.log('m(4)', m(4));
 console.log('m(5)', m(5));
 console.log('m(6)', m(6));
+console.log(
+  Array(6)
+    .fill()
+    .map((value, i) => i + 1)
+    .reduce((prev, cur) => prev * cur),
+);
