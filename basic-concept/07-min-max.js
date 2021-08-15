@@ -7,8 +7,8 @@ console.log(arr[0]);
 console.log(arr); // 사전 방식의 정렬
 console.log('max:', Math.max(10, 20));
 console.log('min:', Math.min(10, 20));
-console.log('max:', Math.max.apply(null, arr));
-console.log('min:', Math.min.apply(null, arr));
+console.log('max in arr:', Math.max.apply(null, arr));
+console.log('min in arr:', Math.min.apply(null, arr));
 
 function getMax(arr) {
   let result = arr[0];
@@ -32,3 +32,11 @@ function getMin(arr) {
 
 console.log('getMax:', getMax(arr));
 console.log('getMin:', getMin(arr));
+console.log(
+  'max:',
+  arr.reduce((prev, cur) => (prev < cur ? cur : prev)),
+);
+console.log(
+  'min:',
+  arr.reduce((prev, cur) => (prev < cur ? prev : cur)),
+);
