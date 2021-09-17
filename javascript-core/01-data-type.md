@@ -99,7 +99,7 @@ obj.a = 2; // 5번째, obj의 a 프로퍼티에 2를 할당
 
 obj의 a 프로퍼티에 할당하는 명령 전과 후에 변수 obj가 바라보고 있는 주소는 변하지 않는다. 즉 '새로운 객체'가 만들어진 것이 아니라 기존 객체 내부의 값만 바뀐 것이다.
 
-<img src="https://user-images.githubusercontent.com/60806840/133733827-af088f33-73c0-4d83-b093-17ffa8664f85.png" align="left" />
+<img src="https://user-images.githubusercontent.com/60806840/133733827-af088f33-73c0-4d83-b093-17ffa8664f85.png" />
 
 
 
