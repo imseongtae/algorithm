@@ -219,7 +219,130 @@ console.log(user === user2); // false
 
 
 
+아래 코드는 참조형 데이터에 대해 다시 그 내부의 프로퍼티들을 복사하는 경우를 표현
 
+```javascript
+var user = {
+  name: 'imseongtae',
+  urls: {
+    portfolio:
+      'https://github.com/imseongtae/js-algorithm/blob/main/javascript-core/01-data-type.md',
+    github: 'https://github.com/imseongtae',
+  },
+};
+
+var copyObject = function (target) {
+  var result = {};
+  for (const prop in target) {
+    result[prop] = target[prop];
+  }
+  return result;
+};
+
+if (user !== user2) {
+  console.log('유저 정보가 변경되었습니다.');
+}
+
+var user2 = copyObject(user);
+user2.name = 'hamburger';
+console.log('user.name === user2.name:', user.name === user2.name);
+
+user.urls.portfolio = 'https://portfolio.com';
+console.log(
+  'user.urls.portfolio === user2.urls.portfolio:',
+  user.urls.portfolio === user2.urls.portfolio,
+);
+
+user.urls.github = 'https://github.com/splin';
+console.log(
+  'user.urls.github === user2.urls.github:',
+  user.urls.github === user2.urls.github,
+);
+```
+
+
+
+객체의 깊은 복사를 수행하는 범용함수를 활용하여 깊은 복사를 수행하는 코드
+
+```javascript
+var user = {
+  name: 'imseongtae',
+  urls: {
+    portfolio:
+      'https://github.com/imseongtae/js-algorithm/blob/main/javascript-core/01-data-type.md',
+    github: 'https://github.com/imseongtae',
+  },
+};
+
+// 객체의 깊은 복사를 수행하는 범용함수
+var copyObjectDeep = function (target) {
+  var result = {};
+  if (typeof target === 'object' && target !== null) {
+    for (const prop in target) {
+      result[prop] = copyObjectDeep(target[prop]);
+    }
+  } else {
+    result = target;
+  }
+  return result;
+};
+
+if (user !== user2) {
+  console.log('유저 정보가 변경되었습니다.');
+}
+
+var user2 = copyObjectDeep(user);
+
+user2.name = 'hamburger';
+console.log('user.name === user2.name:', user.name === user2.name);
+
+user.urls.portfolio = 'https://portfolio.com';
+console.log(
+  'user.urls.portfolio === user2.urls.portfolio:',
+  user.urls.portfolio === user2.urls.portfolio,
+);
+
+user.urls.github = 'https://github.com/splin';
+console.log(
+  'user.urls.github === user2.urls.github:',
+  user.urls.github === user2.urls.github,
+);
+```
+
+
+
+### JSON 을 활용한 간단한 깊은 복사
+
+객체를 JSON 문자열로 전환했다가 다시 JSON 객체로 바꾸는 것을 통해 간단하게 깊은 복사를 처리할 수 있다. 다만 이 메서드(함수)나 숨겨진 프로퍼티인 `__proto__` 나 `getter/setter` 등과 같이 JSON으로 변경할 수 없는 프로퍼티들은 모두 무시한다. **httpRequest로 받은 데이터나 저장한 객체를 복사할 때 등 순수한 정보만 다룰 때 활용하기 좋은 방법이다.**
+
+```javascript
+var copyObjectViaJSON = function (target) {
+  return JSON.parse(JSON.stringify(target));
+};
+
+var obj = {
+  a: 1,
+  b: {
+    c: null,
+    d: [1, 2],
+    func1: function () {
+      console.log(3);
+    },
+    func2: function () {
+      console.log(4);
+    },
+  },
+};
+
+var obj2 = copyObjectViaJSON(obj);
+
+obj2.a = 3;
+obj2.b.c = 4;
+obj2.b.d[1] = 3;
+
+console.log(obj);
+console.log(obj2); // { a: 3, b: { c: 4, d: [ 1, 3 ] } 메서드는 무시됨
+```
 
 
 
