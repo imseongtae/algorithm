@@ -7,6 +7,7 @@
 1. [변수 선언과 데이터 할당](#3.-변수-선언과-데이터-할당)
 1. [기본형 데이터와 참조형 데이터](#4.-기본형-데이터와-참조형-데이터)
 1. [불변 객체](#5.-불변-객체)
+1. [undefined와 null](#6.-undefined와-null)
 
 
 
@@ -453,6 +454,8 @@ console.log(n === null); // true
 ```
 
 
+
+**[⬆ back to top](#table-of-contents)**
 
 
 
