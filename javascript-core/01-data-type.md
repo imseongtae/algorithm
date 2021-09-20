@@ -346,3 +346,113 @@ console.log(obj2); // { a: 3, b: { c: 4, d: [ 1, 3 ] } 메서드는 무시됨
 
 
 
+## 6. undefined와 null
+
+자바스크립트에는 '없음'을 나타내는 값이 두 가지 있다.
+
+`undefined`: 어떤 변수에 값이 존재하는 않을 경우
+
+`null`: 사용자가 명시적으로 없음을 표현하기 위해 대입한 값
+
+### undefined
+
+자바스크립트 엔진은 사용자가 응당 어떤 값을 지정할 것이라고 예상되는 상황임에도 실제로는 그렇게 하지 않았을 때 undefined를 반환한다. 
+
+1. 값을 대입하지 않은 변수, 즉 데이터 영역의 **메모리 주소를 지정하지 않은 식별자**에 접근할 때
+2. 객체 내부에 **존재하지 않는 프로퍼티**에 접근하려고 할 때
+3. return 문이 없거나 호출되지 않은 함수의 실행 결과
+
+```javascript
+var a;
+console.log('a:', a); // undefined 값을 대입하지 않은 변수에 접근
+
+var obj = { a: 1 };
+console.log('obj.a:', obj.a);
+console.log('obj.b:', obj.b); // 존재하지 않는 프로퍼티에 접근
+console.log(b); // c.f) ReferenceError: b is not defined
+
+var func = function () {};
+var c = func(); // 반환(return)이 없으면 undefined를 반환한 것으로 간주
+console.log('func():', c);
+
+// a: undefined
+// obj.a: 1
+// obj.b: undefined
+// func(): undefined
+```
+
+
+
+### 값을 대입하지 않은 배열의 경우
+
+값을 대입하지 않은 배열의 경우에는 `[ <empty items> ]` 이 출력되는데, 이는 빈 요소는 확보했지만 확보한 각 요소에 어떠한 값도, 심지어 `undefined` 조차도 할당되지 않음을 나타낸다.
+
+```javascript
+var arr1 = [];
+arr1.length = 3;
+console.log(arr1); // [ <3 empty items> ]
+
+var arr2 = new Array(3);
+console.log(arr2); // [ <3 empty items> ]
+
+var arr3 = [undefined, undefined, undefined];
+console.log(arr3); // [ undefined, undefined, undefined ]
+```
+
+
+
+### empty 요소와 undefined의 차이 
+
+빈(empty item) 요소와 undefined는 출력 결과에서 차이가 있는데, 빈 요소는 순회와 관련된 배열 메서드들의 순회 대상에서 제외된다.
+
+```javascript
+var arr1 = [undefined, 1];
+var arr2 = [];
+arr2[1] = 1;
+console.log('arr1:', arr1);
+console.log('arr2:', arr2);
+console.log('----------divider----------');
+
+arr1.forEach((v, i) => console.log(v, i)); // undefined 0, 1 1
+arr2.forEach((v, i) => console.log(v, i)); // 1 1
+
+console.log('map:', arr1.map((v, i) => v + i)); // map: [ NaN, 2 ]
+console.log('map:', arr2.map((v, i) => v + i)); // map: [ <1 empty item>, 2 ]
+
+console.log('filter:', arr1.filter(v => !v)); // filter: [ undefined ]
+console.log('filter:', arr2.filter(v => !v)); // filter: []
+
+// reduce의 세 번째 인자는 초기값
+console.log('reduce:', arr1.reduce((p, c, i) => p + c + i, '')); // reduce: undefined011
+console.log('reduce:', arr2.reduce((p, c, i) => p + c + i, '')); // reduce: 11
+```
+
+배열도 객체임을 생각해보면 이는 지극히 자연스러운 현상이다. 존재하지 않은 프로퍼티에 대해 순회할 수 없는 것은 당연한 일이다. 
+
+배열은 객체와 마찬가지로 특정 인덱스에 값을 지정할 때 비로소 빈 공간을 확보하고 인덱스를 이름으로 지정한 후 데이터의 주솟값을 저장하는 등의 동작을 수행한다. 즉, 값이 지정되지 않은 인덱스는 '아직 존재하지 않는 프로퍼티'에 지나지 않는 것이다.
+
+
+
+### null
+
+'비어있음'을 나타내고 싶을 때 `undefined`가 아닌 `null`을 쓰면 된다. 이를 통해 `undefined`는 값을 대입하지 않은 변수에 접근하고자 할 때 자바스크립트 엔진이 반환해주는 값으로서만 존재할 수 있게 된다.
+
+null은 주의할 점이 있는데 typeof null 이 object라는 점이다. 이는 자바스크립트의 버그이며, 어떤 변수 값 null 여부를 판단하기 위해셔는 일치 연산자를 써야만 정확하게 판단할 수 있다.
+
+```javascript
+var n = null;
+console.log('type of null:', typeof n); // type of null: object
+
+// equality operator
+console.log(n == undefined); // true
+console.log(n == null); // true
+
+// identify operator
+console.log(n === undefined); // false
+console.log(n === null); // true
+```
+
+
+
+
+
