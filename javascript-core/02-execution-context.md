@@ -2,14 +2,15 @@
 실행 컨텍스트(execution context)는 실행할 코드에 제공할 환경 정보들을 모아놓은 객체인데, 자바스크립트는 어떤 실행 컨텍스트가 활성화되는 시점에 변수를 위로 끌어올리고, 외부 환경 정보를 구성하고, this 값을 설정하는 등의 동작을 수행한다. 실행 컨텍스트는 동적 언어로서의 자바스크립트 특성이 잘 드러나는 개념이며, 이로 인해 다른 언어에서는 발견할 수 없는 특이한 현상을 야기한다.
 
 ## table of contents
-1. [실행 컨텍스트란](#1.-실행-컨텍스트란)
-2. [VariableEnvironment](#2.-VariableEnvironment)
-3. [LexicalEnvironment](#3.-LexicalEnvironment)
+1. [실행 컨텍스트란](#실행-컨텍스트란)
+2. [VariableEnvironment](#VariableEnvironment)
+3. [LexicalEnvironment](#LexicalEnvironment)
+4. [outerEnvironmentReference](#outerEnvironmentReference)
 
 
 
 
-## 1. 실행 컨텍스트란
+## 실행 컨텍스트란
 실행 컨텍스트는 실행할 코드에 제공할 환경 정보들을 모아놓은 객체라고 정의할 수 있다. 
 
 ### 배경 지식
@@ -56,13 +57,13 @@ console.log(a); // 1
 
 
 
-## 2. VariableEnvironment
+## VariableEnvironment
 
 VariableEnvironment에 담기는 내용은 LexicalEnvironment 와 같지만 최초 실행 시의 스내샷을 유지한다는 점이 다르다. 실행 컨텍스트를 생성할 때 VariableEnvironment에 정보를 먼저 담고서, 이를 그대로 복사해 LexicalEnvironment 를 만들고, 이후 주로 LexicalEnvironment를 활용한다. 
 
 
 
-## 3. LexicalEnvironment
+## LexicalEnvironment
 
 비유적으로 컨텍스트를 구성하는 환경 정보들을 모아놓은 것으로 여길 수 있다. 
 
@@ -162,6 +163,8 @@ d(); // error!
 
 ### 함수 선언문과 함수 표현식의 차이
 
+함수 선언문과 함수 표현식은 호이스팅에 의해 차이가 발이가 발생하는데, 함수 선언문은 함수 본문 전체를 호이스팅 하지만 함수 표현식의 경우에는 변수 선언의 호이스팅과 같이 선언부만 호이스팅된다. (함수를 다른 변수에 값으로써 할당한 것이 함수 표현식)
+
 ```javascript
 console.log(sum(1, 2));
 console.log(multiply(3, 4));
@@ -212,7 +215,7 @@ sum 함수는 호출 전에도 문제 없이 실행 되는데, 이 부분은 자
 
 
 
-## 4. outerEnvironmentReference
+## outerEnvironmentReference
 
 ES5까지의 자바스크립트는 특이하게도 전역공간을 제외하면 오직 함수에 의해서만 스코프가 생성된다.  이렇게 식별자의 유효범위를 안에서부터 바깥으로 차례로 검색해나가는 것을 스코프 체인이라고 하는데, 이를 가능하게 하는 것이 LexicalEnvironment의 두 번째 수집자료인  outerEnvironmentReference이다.
 
@@ -237,5 +240,29 @@ outer();
 console.log(a);
 ```
 
+ 
 
+### 다시 살펴보는 전역변수와 지역변수의 개념
+
+**전역변수**는 전역 공간에서 선언한 변수이고, **지역변수**는 함수 내부에서 선언한 변수를 말한다. 이를 풀어서 설명하면 전역 컨텍스트의 LexicalEnvironment에 담긴 변수가 전역변수가 이고, 그 밖의 함수에 의해 생성된 실행 컨텍스트의 변수들은 모두 지역변수이다.
+
+코드 상에서 어떤 변수에 접근할 때 현재 컨텍스트의 LexicalEnvironment를 탐색해서 발견하면 그 값을 반환하고, 발견하지 못하면 다시 outerEnvironmentReference에 담긴 LexicalEnvironment를 탐색하는 과정을 거친다. 만약 전역 컨텍스트의 LexicalEnvironment까지 탐색해도 해당 변수를 찾지 못하면 undefined를 반환한다. 
+
+### 변수 은닉화
+
+스코프 체인 상에 있는 변수라고 해도 무조건 접근할 수 있는 것은 아니다. `inner` 함수 내부에서 `a` 변수를 선언했으므로 전역 공간에서 선언한 동일한 이름의 `a` 변수에는 접근할 수 없다. `inner` 함수에서는 무조건 스코프 체인 상에서의 첫 번째 인자, 즉` inner` 스코프의 LexicalEnvironment부터 검색할 수밖에 없다.
+
+```javascript
+var a = 1;
+var outer = function () {
+  var inner = function () {
+    console.log(a); // inner 함수의 실행 컨텍스트에서는 무조건 가장 가까운 변수 a에 접근하게 됨
+    var a = 3;
+  };
+  inner();
+  console.log(a);
+};
+outer();
+console.log(a);
+```
 
