@@ -16,6 +16,8 @@
 
 this는 실행 컨텍스트가 생성될 때 함께 결정된다. 이러한 실행 컨텍스트는 함수를 호출할 때 생성되므로, 다시 말하면 **this는 함수를 호출할 때 결정**된다고 할 수 있다.
 
+
+
 ### 전역 공간에서의 this
 
 전역 컨텍스트를 생성하는 주체가 바로 전역 객체이기 때문에 전역 공간에서 this는 전역 객체를 가리킨다. 
@@ -25,8 +27,6 @@ console.log(this); // Window { ... }
 console.log(window); // Window { ... }
 console.log(this === window); // truw
 ```
-
-
 
 #### 전역 공간에서 발생하는 특이한 현상
 
@@ -40,8 +40,6 @@ console.log(this.a);
 ```
 
 **전역변수를 선언하면 자바스크립트 엔진은 이를 전역객체의 프로퍼티로 할당**한다. 그렇지만 위의 예제에서 `a`를 호출할 경우 `1`이 나오는 이유는 변수 `a`에 접근하고자 할 때 스코프 체인에서 `a`를 검색하다가 가장 마지막에 도달하는 전역 스코프의 L.E, 즉 전역객체에서 해당 프로퍼티 `a`를 발견해서 그 값을 반환하기 때문이다(단순하게 `window.` 이 생략된 것이라고 여겨도 됨)
-
-
 
 #### 전역변수 선언과 전역객체 프로퍼티 할당 사이의 차이점
 
@@ -83,11 +81,15 @@ console.log(d, window.d, this.d); // Uncaught ReferenceError: d is not defined
 
 이처럼 `var`로 선언한 전역변수와 전역객체의 프로퍼티는 호이스팅 여부 및 configurable 여부에서 차이를 보인다.
 
+---
+
+**[⬆ back to top](#table-of-contents)**
+
 
 
 ### 메서드로서 호출할 때 this
 
-프로그래밍 언어에서 함수와 메서드는 미리 정의한 동작을 수행하는 코드 뭉치로, 이 둘을 구분하는 유일한 차이는 독립성이다. 함수는 그 자체로 독립적인 기능을 수행하는 반면, **메서드는 자신을 호출한 대상 객체에 관한 동작**을 수행하는데 자바스크립트는 상황별로 this 키워드에 다른 값을 부여하게 함으로써 이를 구현했다.
+프로그래밍 언어에서 함수와 메서드는 미리 정의한 동작을 수행하는 코드 뭉치로, 이 둘을 구분하는 **유일한 차이는 독립성**이다. 함수는 그 자체로 독립적인 기능을 수행하는 반면, **메서드는 자신을 호출한 대상 객체에 관한 동작**을 수행하는데 자바스크립트는 상황별로 this 키워드에 다른 값을 부여하게 함으로써 이를 구현했다.
 
 #### 함수로서 호출과 메서드로서의 호출 비교
 
@@ -112,7 +114,7 @@ obj.method(2); // {burger: 'hamburger', method: ƒ}, 2
 
 #### 함수로서의 호출과 메소드로서의 호출 구분
 
-함수로서의 호출인지 메소드로서의 호출인지 구분하기 위해선 함수 앞에 점(.)이 있는지 살펴보면 된다. 대괄호 표기법의 경우 조금 다를 수 있지만 **어떤 함수를 호출할 때 그 함수 이름 앞에 객체가 명시되어 있는 경우에는 메서드로서 호출한 것이고, 그렇지 않은 경우는 함수로 호출**한 것이다.
+함수로서의 호출인지 메소드로서의 호출인지 구분하기 위해선 함수 앞에 **점(`.`)**이 있는지 살펴보면 된다. 대괄호 표기법까지 생각하면 살펴야 하는 경우는 늘어날 수 있지만 **어떤 함수를 호출할 때 그 함수 이름 앞에 객체가 명시되어 있는 경우에는 메서드로서 호출한 것이고, 그렇지 않은 경우는 함수로 호출**한 것이다.
 
 #### 메소드 내부에서의 this
 
@@ -139,7 +141,152 @@ obj['inner'].methodB();    // { methodB: f }         { === obj.inner }
 obj['inner']['methodB'](); // { methodB: f }         { === obj.inner }
 ```
 
+---
 
+**[⬆ back to top](#table-of-contents)**
+
+
+
+### 함수로서 호출할 때, 함수 내부에서의 this
+
+어떤 함수를 함수로서 호출한 경우에는 `this`가 지정되지 않는다. `this`에는 호출한 주체에 대한 정보가 담기는데, 함수로서 호출하는 것은 호출 주체를 명시하지 않고, 개발자가 코드에 직접 관여해서 실행한 것이므로 호출 주체의 정보를 알 수 없다. 따라서 함수에서의 `this`는 전역객체를 가리킨다. (더글라스 크락포드는 이를 설계상의 오류라고 지적했다.)
+
+#### 메서드 내부함수에서의 this
+
+내부함수 또한 이를 함수로서 호출했는지 메서드로서 호출했는지만 파악하면 this의 값을 정확히 맞출 수 있다.  아래의 예제에서 outer 메서드 내부의 함수를 함수로서 호출했는지, 메서드로서 호출했는지에 따라 바인딩되는 this의 대상이 서로 다르다. 
+
+```javascript
+var obj1 = {
+  outer: function () {
+    console.log(this); // obj1
+    var innerFunc = function () {
+      console.log(this);
+    };
+    // outer 메서드 내부의 함수를 함수로서 호출
+    innerFunc(); // Window {...}
+
+    var obj2 = {
+      innerMethod: innerFunc,
+    };
+    // outer 메서드 내부의 함수를 메서드로서 호출
+    obj2.innerMethod(); // obj2
+  },
+};
+
+obj1.outer();
+```
+
+결과적으로 `this`바인딩에 관해서 함수를 실행하는 당시의 주변 환경은 중요하지 않고, **오직 함수를 호출하는 구문 앞에 점 또는 대괄호 표기가 있는지 없는지가 관건**이다.
+
+#### 내부 함수에서의 this를 우회하는 방법
+
+아쉽게도 ES5까지는 내부함수에 this를 상속할 방법이 없지만 다행히 이를 우회할 방법이 없지는 않다. 가장 대표적인 방법으로는 변수를 활용하는 방법이 있다.
+
+```javascript
+var obj = {
+  outer: function () {
+    console.log(this); // { outer: f }
+    var innerFunc1 = function () {
+      console.log(this); // Window {...}
+    };
+    // outer 메서드 내부의 함수를 함수로서 호출
+    innerFunc1();
+
+    var self = this;
+    var innerFunc2 = function () {
+      console.log(self);
+    };
+    innerFunc2(); // { outer: f }
+  },
+};
+
+obj.outer();
+```
+
+위의 예제에서 `innerFunc1` 내부의 this는 전역 객체를 가리키지만, `outer` 스코프에서 `self`라는 변수에 `this`를 저장한 상태에서 호출한 `innerFunc2`의 경우 `self`에는 객체 `obj`가 출력된다. 그저 상위 스코프의 `this`를 저장해서 내부함수에서 활용하는 수단일뿐이지만 기대에는 충실히 부합한다.
+
+#### this를 바인딩하지 않는 함수
+
+ES6에서는 함수 내부에서 this가 전역객체를 바라보는 문제를 보완하고자 this를 바라보지 않는 화살표 함수를 새로 도입했다.
+
+```javascript
+var obj = {
+  outer: function () {
+    console.log(this); // { outer: f }
+
+    var innerFunc = () => {
+      console.log(this); // { outer: f }
+    };
+    innerFunc();
+
+    // 즉시 실행함수
+    (() => {
+      console.log(this); // { outer: f }
+    })();
+  },
+};
+
+obj.outer();
+```
+
+---
+
+**[⬆ back to top](#table-of-contents)**
+
+
+
+### 콜백 함수 호출 시 그 함수 내부에서의 this
+
+함수 A의 제어권을 다른 함수 B에게 넘겨주는 경우 함수 A를 콜백 함수라고 한다. 이때 함수 A는 함수 B의 내부 로직에 따라 실행되며, this 역시 함수 B 내부 로직에서 장한 규칙에 따라 값이 결정된다. 
+
+```javascript
+setTimeout(function () { // 1
+  console.log('this is in timeout');
+  console.log(this); // Window { ... }
+}, 1000);
+
+[1, 2, 3, 4, 5].forEach(function (x) { // 2
+  console.log(this, x);  // Window { ... }
+});
+
+document.body.innerHTML += '<button id="a">클릭</button>';
+document.body.querySelector('#a').addEventListener('click', function (e) { // 3
+  console.log(this, e); // <button id="a">클릭</button>, PointerEvent { ... }
+});
+```
+
+(1) `setTimeout` 함수와 (2) `forEach` 메서드는 그 내부에서 콜백 함수를 호출할 때 대상이 될 `this`를 지정하지 않으므로 콜백 함수 내부에서 `this`는 전역 객체를 참조한다. 반면 `addEventListener` 메서드는 콜백 함수를 호출할 때 자신의 `this`를 상속하도록 정의되어 있으므로 메서드명의 점(`.`) 앞부분이 `this`가 된다. 
+
+콜백 함수에서의 `this`는 콜백함수의 제어권을 가지는 **함수(메서드)에서 결정**하며, 특별히 정의하지 않은 경우에는 기본적으로 전역객체를 가리킨다.
+
+### 생성자 함수 내부에서의 this
+
+생성자 함수는 어떤 공통된 성질을 지니는 객체들을 생성하는데 사용하는 함수이다. 객체지향 언어에서는 **생성자를 클래스**, **클래스를 통해 만든 객체를 인스턴스**라고 한다. 생성자는 구체적인 인스턴스를 만들기 위한 일종의 틀이다. 이 틀에는 클래스의 공통 속성들이 미리 준비돼 있고, 여기에 구체적인 인스턴스의 개성을 더해 개별 인스턴스를 만들 수 있다. 
+
+#### 자바스크립트의 생성자 함수
+
+자바스크립트는 함수에 생성자로서의 역할을 함께 부여했다. `new` 명령어와 함께 함수를 호출하면 해당 함수가 생성자로서 동작하게 된다. 그리고 어떤 함수가 생성자로서 호출된 경우 내부에서의 **`this`는 곧 새로 만들 구체적인 인스턴스 자신**이 된다. 
+
+**생성자 함수를 호출**(new 명령어와 함께 함수를 호출)하면 우선 생성자의 `prototype` 프로퍼티를 참조하는 `__proto__` 라는 프로퍼티가 있는 **객체(인스턴스)**를 만들고, **미리 준비된 공통 속성 및 개성을 해당 객체에 부여**한다. 이렇게 해서 **구체적인 인스턴스**가 만들어진다.
+
+```javascript
+var Cat = function (name, age) {
+  this.bark = '야옹';
+  this.name = name;
+  this.age = age;
+};
+
+var choco = new Cat('초코', 7);
+var nabi = new Cat('나비', 5);
+
+// 각각의 인스턴스에서 this는 'Cat 클래스의 인스턴스 객체'를 가리킨다.
+console.log(choco); // Cat { bark: '야옹', name: '초코', age: 7 }
+console.log(nabi);  // Cat { bark: '야옹', name: '나비', age: 5 }
+```
+
+---
+
+**[⬆ back to top](#table-of-contents)**
 
 
 
