@@ -7,6 +7,7 @@
 ## table of contents
 
 1. [상황에 따라 달라지는 this](#상황에-따라-달라지는-this)
+2. [명시적으로 this를 바인딩하는 방법](#명시적으로-this를-바인딩하는 방법)
 
 
 
@@ -287,6 +288,84 @@ console.log(nabi);  // Cat { bark: '야옹', name: '나비', age: 5 }
 ---
 
 **[⬆ back to top](#table-of-contents)**
+
+
+
+
+
+## 명시적으로 this를 바인딩하는 방법
+
+### call 메서드
+
+**call 메서드는 메서드의 호출 주체인 함수를 즉시 실행하도록 하는 명령**이다. 함수를 그냥 실행하면 this는 전역객체를 참조하지만 call 메서드를 이용하면 임의의 객체를 this로 지정할 수 있다.
+
+```javascript
+var func = function (a, b, c) {
+  console.log(this, a, b, c);
+};
+
+func(1, 2, 3); // Window { ... } 1 2 3
+func.call({ x: 1 }, 4, 5, 6); // {x: 1} 4 5 6
+```
+
+함수뿐만 아니라 메서드도 마찬가지로 call 메서드를 이용해 임의의 객체를 this로 지정할 수 있다.
+
+```javascript
+var obj = {
+  a: 1,
+  method: function (x, y) {
+    console.log(this.a, x, y);
+  },
+};
+
+obj.method(2, 3); // 1 2 3
+obj.method.call({ a: 4 }, 5, 6); // 4 5 6
+```
+
+### apply 메서드
+
+apply 메서드는 call 메서드와 기능이 동일하다. 다만 두 번째 인자를 배열로 받아서 그 배열의 요소들을 호출할 함수의 매개변수로 지정한다는 점에서 차이가 있다. 
+
+```javascript
+var func = function (a, b, c) {
+  console.log(this, a, b, c);
+};
+func.apply({ x: 1 }, [4, 5, 6]); // {x: 1} 4 5 6
+
+var obj = {
+  a: 1,
+  method: function (x, y) {
+    console.log(this.a, x, y);
+  },
+};
+obj.method.apply({ a: 4 }, [5, 6]); // 4 5 6
+```
+
+### call과 apply 메서드의 활용
+
+`call`과 `apply` 메서드를 잘 활용하면 자바스크립트를 다채롭게 사용할 수 있다.
+
+#### 유사배열객체에 배열 메서드를 적용
+
+객체에는 배열 메서드를 직접 적용할 수 없지만 키가 `0` 또는 양의 정수인 프로퍼티가 존재하고, `length` 프로퍼티의 값이 `0` 또는 양의 정수인 객체, **즉 배열의 구조와 유사한 객체**의 경우 `call` 또는 `apply` 메서드를 이용해 배열 메서드를 차용할 수 있다.
+
+```javascript
+var obj = {
+  0: 'a',
+  1: 'b',
+  2: 'c',
+  length: 3,
+};
+
+Array.prototype.push.call(obj, 'd');
+console.log(obj);
+
+var arr = Array.prototype.slice.call(obj);
+console.log(arr);
+```
+
+- 위의 예제에서 배열 메서드인 push 를 객체 obj에 적용해 프로퍼티 3에 'd'를 추가했다. 
+- 위의 예제에서 slice 메서드를 적용해 객체를 배열로 전환했다. slice 메서드는 원본 배열을 바꾸지 않고, 배열 요소를 추출하는 메서드인데, 매개변수를 아무것도 넘기지 않을 경우에는 원본 배열의 얕은 복사본을 반환한다. 예제에서 call 메서드를 이용해 원본인 **유사배열객체의 얕은 복사를 수행**했는데, slice 메서드가 배열 메서드이므로 복사본은 배열로 반환하게 된다. 
 
 
 
