@@ -358,14 +358,69 @@ var obj = {
 };
 
 Array.prototype.push.call(obj, 'd');
-console.log(obj);
+console.log(obj); // { '0': 'a', '1': 'b', '2': 'c', '3': 'd', length: 4 }
 
 var arr = Array.prototype.slice.call(obj);
-console.log(arr);
+console.log(arr); // ['a', 'b', 'c', 'd']
 ```
 
 - 위의 예제에서 배열 메서드인 push 를 객체 obj에 적용해 프로퍼티 3에 'd'를 추가했다. 
 - 위의 예제에서 slice 메서드를 적용해 객체를 배열로 전환했다. slice 메서드는 원본 배열을 바꾸지 않고, 배열 요소를 추출하는 메서드인데, 매개변수를 아무것도 넘기지 않을 경우에는 원본 배열의 얕은 복사본을 반환한다. 예제에서 call 메서드를 이용해 원본인 **유사배열객체의 얕은 복사를 수행**했는데, slice 메서드가 배열 메서드이므로 복사본은 배열로 반환하게 된다. 
 
+#### arguments, NodeList에 배열 메서드를 적용
 
+함수 내부에서 접근할 수 있는 `arguments` 객체도 유사배열객체이므로 배열로 전환해서 사용할 수 있다. 그리고 이 방법으로 `querySelectorAll`, `getElementsByClassName` 등의 `Node` 선택자로 선택한 결과인 `NodeList`도 **배열로 전환해서 사용**할 수 있다.
+
+```javascript
+function a() {
+  console.log('arguments: ', arguments); // arguments:  [Arguments] { '0': 1, '1': 2, '2': 3 }
+  var argv = Array.prototype.slice.call(arguments);
+  argv.forEach(function (arg) {
+    console.log(arg);
+  });
+}
+a(1, 2, 3); // 1 2 3
+
+document.body.innerHTML = '<div>a</div><div>b</div><div>c</div>';
+var nodeList = document.querySelectorAll('div');
+var nodeArr = Array.prototype.slice.call(nodeList);
+nodeArr.forEach(function (node) {
+  console.log(node); // div>a</div> <div>b</div> <div>c</div>
+});
+```
+
+#### 문자열에 배열 메서드 적용
+
+유사배열객체에는 call/apply 메서드를 이용해 모든 배열 메서드를 적용할 수 있다. 배열처럼 인덱스와 length 프로퍼티를 지니는 문자열에 대해서도 마찬가지이다. 
+
+```javascript
+var str = 'abc def';
+
+Array.prototype.push.call(str, ' pushed string');
+// TypeError: Cannot assign to read only property 'length' of object '[object String]'
+
+Array.prototype.concat.call(str, 'string'); // [ [String: 'abc def'], 'string' ]
+
+Array.prototype.every.call(str, function (char) {
+  return char !== ' ';
+}); // true
+
+Array.prototype.some.call(str, function (char) {
+  return char === ' ';
+}); // true
+
+var newArr = Array.prototype.map.call(str, function (char) {
+  return char + '!';
+});
+console.log(newArr); // ['a!', 'b!','c!', ' !','d!', 'e!','f!']
+
+var newStr = Array.prototype.reduce.apply(str, [
+  function (string, char, i) {
+    return string + char + i;
+  },
+]);
+console.log(newStr); // ab1c2 3d4e5f6
+```
+
+위의 예제처럼 **call/apply 를 이용해 형변환하는 것은 'this를 원하는 값으로 지정해서 호출한다'는 본래의 메서드 의도와 동떨어진 활용법**이다.
 
