@@ -322,6 +322,8 @@ obj.method(2, 3); // 1 2 3
 obj.method.call({ a: 4 }, 5, 6); // 4 5 6
 ```
 
+
+
 ### apply 메서드
 
 apply 메서드는 call 메서드와 기능이 동일하다. 다만 두 번째 인자를 배열로 받아서 그 배열의 요소들을 호출할 함수의 매개변수로 지정한다는 점에서 차이가 있다. 
@@ -341,9 +343,15 @@ var obj = {
 obj.method.apply({ a: 4 }, [5, 6]); // 4 5 6
 ```
 
+---
+
+**[⬆ back to top](#table-of-contents)**
+
+
+
 ### call과 apply 메서드의 활용
 
-`call`과 `apply` 메서드를 잘 활용하면 자바스크립트를 다채롭게 사용할 수 있다.
+`call`과 `apply` 메서드를 잘 활용하면 자바스크립트를 다채롭게 사용할 수 있다. 하지만 `call`과 `apply` 메서드는 명시적으로 별도의 `this`를 바인딩하면서 함수나 메서드를 실행하므로, 오히려 `this`를 예측하기 어렵게 만들어 코드 해석을 어렵게 한다는 단점이 있다. 그렇지만 ES5 이하의 환경에서는 마땅한 대안이 없으므로 실무에서 광범위하게 활용된다.
 
 #### 유사배열객체에 배열 메서드를 적용
 
@@ -391,7 +399,7 @@ nodeArr.forEach(function (node) {
 
 #### 문자열에 배열 메서드 적용
 
-유사배열객체에는 call/apply 메서드를 이용해 모든 배열 메서드를 적용할 수 있다. 배열처럼 인덱스와 length 프로퍼티를 지니는 문자열에 대해서도 마찬가지이다. 
+유사배열객체에는 `call/apply` 메서드를 이용해 모든 배열 메서드를 적용할 수 있다. 배열처럼 인덱스와 `length` 프로퍼티를 지니는 문자열에 대해서도 마찬가지이다. 단 문자열의 경우 length 프로퍼티가 읽기 전용이므로 원본 문자열에 변경을 가하는 메서드(`push`, `pop`, `shift`, `unshift`, `splice`)는 에러를 던지며, `concat`처럼 대상이 반드시 배열이어야 하는 경우에는 에러는 나지 않지만 제대로된 결과를 얻을 수 없다. 
 
 ```javascript
 var str = 'abc def';
@@ -422,5 +430,216 @@ var newStr = Array.prototype.reduce.apply(str, [
 console.log(newStr); // ab1c2 3d4e5f6
 ```
 
-위의 예제처럼 **call/apply 를 이용해 형변환하는 것은 'this를 원하는 값으로 지정해서 호출한다'는 본래의 메서드 의도와 동떨어진 활용법**이다.
+위의 예제처럼 **call/apply 를 이용해 형변환하는 것은 'this를 원하는 값으로 지정해서 호출한다'는 본래의 메서드 의도와 동떨어진 활용법**이다. **경험을 통해 숨은 뜻을 알고 있는 사람이 아닌 이상 코드만 봐서는 어떤 의미인지 파악하기 쉽지 않다.**
+
+#### Array.from
+
+ES6에서는 유사배열객체 또는 순회 가능한 모든 종류의 데이터 타입을 **배열로 전환하는** `Array.from` 메서드를 도입했다. (위의 call/apply 예제처럼 본래의 의도와 동떨어진 사용법 보다 명확한 의미를 전달하기 위해)
+
+```javascript
+var obj = {
+  0: 'a',
+  1: 'b',
+  2: 'c',
+  length: 3,
+};
+
+var arr = Array.from(obj);
+console.log(arr); // ['a', 'b', 'c']
+```
+
+#### 생성자 내부에서 다른 생성자를 호출
+
+생성자 내부에서 다른 생성자와 공통된 내용이 있을 경우 `call` 또는 `apply`를 이용해 다른 생성자를 호출하면 간단하게 반복을 줄일 수 있다. 
+
+```javascript
+function Person(name, gender) {
+  this.name = name;
+  this.gender = gender;
+}
+
+function Student(name, gender, school) {
+  Person.call(this, name, gender);
+  this.school = school;
+}
+
+function Employee(name, gender, company) {
+  Person.call(this, name, gender);
+  this.company = company;
+}
+
+var hamburger = new Student('ham', 'male', 'burgerking');
+var employee = new Employee('cheese', 'female', 'mcdonalds');
+console.log(hamburger); // Student { name: 'ham', gender: 'male', school: 'burgerking' }
+console.log(employee); // Employee { name: 'cheese', gender: 'female', company: 'mcdonalds' }
+```
+
+위의 예제에서 Student, Employee 생성자 함수는 내부에서 Person 생성자 함수를 호출해서 인스턴스의 속성을 정의한다.
+
+#### 여러 인수들을 묶어 하나의 배열로 전달하고 싶을 때
+
+여러 개의 인수를 받는 메서드에게 하나의 배열로 값을 전달하고 싶을 때 `apply` 메서드를 사용하면 좋다. 배열의 최대/최솟값을 구해야 할 경우 `apply`를 사용하지 않는다면 아래처럼 구현할 수 밖에 없다. 
+
+```javascript
+var nums = [2, 3, 4, 5, 1, 40, 90, 15];
+
+var max = nums[0];
+var min = nums[0];
+nums.forEach(function (num) {
+  if (num > max) {
+    max = num;
+  }
+  if (num < min) {
+    min = num;
+  }
+});
+
+console.log('min:', min, 'max:', max);
+
+function getMin(nums) {
+  return nums.reduce((prev, cur) => (prev > cur ? prev : cur));
+}
+console.log(getMin(nums));
+```
+
+반면, `apply`를 사용한다면 코드의 가독성을 높이고 간결하게 작성할 수 있다. `Math.max` 메서드에 `apply`를 적용하면 훨씬 간결해진다. 
+
+```javascript
+var nums = [2, 3, 4, 5, 1, 40, 90, 15];
+
+var min = Math.min.apply(null, nums);
+var max = Math.max.apply(null, nums);
+console.log(min);
+console.log(max);
+```
+
+위의 코드를 **spread operator**(펼침 연산자)를 활용하면 `apply`를 이용하는 것 보다 간결하게 작성할 수 있다.
+
+```javascript
+var nums = [2, 3, 4, 5, 1, 40, 90, 15];
+
+var min = Math.min(...nums);
+var max = Math.max(...nums);
+console.log('min:', min);
+console.log('max:', max);
+```
+
+---
+
+**[⬆ back to top](#table-of-contents)**
+
+
+
+### bind 메서드
+
+`bind`는` call`과 비슷하지만 즉시 호출하지 않고, **넘겨 받은 this 및 인수들을 바탕으로 새로운 함수를 반환하기만 하는 메서드**이다. 즉 `bind` 메서드는 **함수에 this를 미리 적용하는 것**과 **부분 적용 함수를 구현**하는 두 가지 목적을 지닌다. 
+
+```javascript
+var func = function (a, b, c, d) {
+  console.log(this, a, b, c, d);
+};
+
+func(1, 2, 3, 4); // Window { ... } 1 2 3 4
+
+var bindFunc1 = func.bind({ x: 1 }); // this만을 지정
+bindFunc1(5, 6, 7, 8); // { x: 1 } 5 6 7 8
+
+var bindFunc2 = func.bind({ x: 1 }, 4, 5); // this 지정과 함께 부분 적용 함수 구현
+bindFunc2(6, 7); // { x: 1 } 4 5 6 7
+bindFunc2(8, 9); // { x: 1 } 4 5 8 9
+```
+
+위의 예제에서 `bindFunc1`의 `bind`는 `this`만을 지정한 것이고, `bindFunc2`의 `bind`는 `this` 지정과 함께 부분 적용 함수를 구현한 것이다. 
+
+#### name 프로퍼티
+
+`bind` 메서드를 적용해 만든 함수는 동사 `bind`의 수동태인 'bound'라는 접두어 붙는다. 이를 통해 어떤 함수의 name 프로퍼티가 'bound xxx'라면, 이는 함수명이 xxx인 원본 함수에 `bind` 메서드를 적용한 새로운 함수라는 의미를 가지므로 기존의 `call/apply` 보다 코드를 추적하기에 더 수월하다.
+
+```javascript
+var func = function (a, b, c, d) {
+  console.log(this, a, b, c, d);
+};
+var bindFunc = func.bind({ x: 1 }, 4, 5);
+console.log(func.name); // func
+console.log(bindFunc.name); // bound func
+
+var calc = function (x, y) {
+  console.log(this, x, y);
+};
+var bindCalc = calc.bind({ value: 45, x: 10 });
+console.log('calc name: ', calc.name); // calc
+console.log(bindCalc.name); // bound calc
+```
+
+#### 상위 컨텍스트의 this를 내부함수나 콜백 함수에 전달하기
+
+메서드의 내부함수에서 메서드의 `this`를 바라보게 하기 위한 방법으로 `self` 등의 변수를 활용한 우회법 대신 `call`, `apply` 또는 `bind` 메서드를 활용할 수 있다.
+
+```javascript
+var obj = {
+  outer: function () {
+    console.log(this);
+    var innerFunc = function () {
+      console.log(this);
+    };
+    innerFunc.call(this);
+  },
+};
+obj.outer();
+```
+
+```javascript
+// bind 메서드를 활용한 방법
+var obj = {
+  outer: function () {
+    console.log(this); // {outer: ƒ}
+    var innerFunc = function () {
+      console.log(this);
+    }.bind(this);
+    innerFunc(); // {outer: ƒ}
+  },
+};
+obj.outer();
+```
+
+기본적으로 콜백 함수 내에서의 `this`에 관여하는 함수 또는 메서드에 대해서도 `bind` 메서드를 이용하면 `this`값을 사용자의 입맛에 맞게 바꿀 수 있다.z
+
+```javascript
+var obj = {
+  logThis: function () {
+    console.log(this);
+  },
+  logThisLater1: function () {
+    setTimeout(this.logThis, 500);
+  },
+  logThisLater2: function () {
+    setTimeout(this.logThis.bind(this), 1000);
+  },
+};
+
+obj.logThisLater1(); // Window { ... }
+obj.logThisLater2(); // {logThis: ƒ, logThisLater1: ƒ, logThisLater2: ƒ}
+```
+
+### 화살표 함수 예외 사항
+
+화살표 함수를 사용하면 별도의 변수로 this를 우회하거나 `call`, `apply` 또는 `bind` 메서드를 적용할 필요가 없어서 간결하게 코드를 작성할 수 있다.
+
+```javascript
+var obj = {
+  outer: function () {
+    console.log(this); // { outer: f }
+    var innerFunc = () => {
+      console.log(this);
+    };
+    innerFunc(); // { outer: f }
+  },
+};
+
+obj.outer();
+```
+
+
+
+
 
