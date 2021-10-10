@@ -639,6 +639,58 @@ var obj = {
 obj.outer();
 ```
 
+---
+
+**[⬆ back to top](#table-of-contents)**
+
+
+
+### 별도의 인자로 this를 받는 경우(콜백 함수 내에서의 this)
+
+콜백 함수를 인자로 받는 메서드 중 일부는 추가로 this로 지정할 객체(thisArg)를 인자로 지정할 수 있는 경우가 있다. 이러한 메서드의 thisArg 값을 지정해 콜백 함수 내부에서 this값을 원하는 대로 변경할 수 있다. 
+
+```javascript
+var report = {
+  sum: 0,
+  count: 0,
+  add: function () {
+    var args = Array.prototype.slice.call(arguments);
+    args.forEach(function (entry) {
+      this.sum += entry;
+      ++this.count;
+    }, this);
+  },
+  average: function () {
+    return this.sum / this.count;
+  },
+};
+
+report.add(60, 85, 95);
+console.log(report.sum, report.count, report.average()); // 240 3 80
+```
+
+#### 콜백 함수와 함께 thisArg를 인자로 받는 메서드
+
+위의 예제는 forEach를 활용했지만, 이 밖에도 thisArg를 인자로 받는 메서드는 많이 있다.
+
+```javascript
+Array.prototype.forEach(callback[, thisArg])
+Array.prototype.map(callback[, thisArg])
+Array.prototype.filter(callback[, thisArg])
+Array.prototype.some(callback[, thisArg])
+Array.prototype.every(callback[, thisArg])
+Array.prototype.find(callback[, thisArg])
+Array.prototype.findIndex(callback[, thisArg])
+Array.prototype.flatMap(callback[, thisArg])
+Array.prototype.from(callback[, thisArg])
+Set.prototype.forEach(callback[, thisArg])
+Map.prototype.forEach(callback[, thisArg])
+```
+
+---
+
+**[⬆ back to top](#table-of-contents)**
+
 
 
 
