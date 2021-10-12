@@ -5,10 +5,7 @@
 
 ## table of contents
 1. [제어권](#제어권)
-
-
-
-
+2. [콜백 함수는 함수다](#콜백-함수는-함수다)
 
 
 
@@ -51,13 +48,74 @@ console.log(newArr);
 // [ 15, 25, 35 ]
 ```
 
+### this
 
+#### Array.prototype.map 구현 예제
 
+콜백 함수도 함수이므로 기본적으로는 this가 전역객체를 참조하지만 제어권을 넘겨받을 코드에서 콜백 함수에 별도로 this가 될 대상을 지정한 경우에는 그 대상을 참조하게 된다. 별도의 this를 지정하고, 제어권에 대한 이해를 높이기 위해 map 메서드를 구현하는 아래 예제를 확인해보자.
 
+```javascript
+Array.prototype.customizedMap = function (callback, thisArg) {
+  var mappedArr = [];
+  for (let i = 0; i < this.length; i++) {
+    var mappedValue = callback.call(thisArg || window, this[i], i, this);
+    mappedArr[i] = mappedValue;
+  }
+  return mappedArr;
+};
+
+var arr = [1, 2, 3, 4];
+var result = arr.customizedMap(function (item) {
+  return item + 5;
+});
+console.log(result); // [ 6, 7, 8, 9 ]
+```
 
 ---
 
 **[⬆ back to top](#table-of-contents)**
+
+
+
+## 콜백 함수는 함수다
+
+### 메서드를 콜백 함수로 전달한 경우
+
+**콜백 함수는 함수**이므로, **어떤 객체의 메서드를 전달하더라도 결국 메서드가 아닌 함수로서 호출**된다. 
+
+```javascript
+var obj = {
+  vals: [1, 2, 3],
+  logValues: function (v, i) {
+    console.log(this, v, i);
+  },
+};
+
+obj.logValues(1, 2); // {vals: Array(3), logValues: ƒ} 1 2
+[4, 5, 6].forEach(obj.logValues);
+// result 
+// Window { ... } 4 0
+// Window { ... } 5 1
+// Window { ... } 6 2
+```
+
+`Array.prototype.forEach(callback[, thisArg])` 의 용법에 따라 `this`를 인자로 전달한 경우의 예제
+
+```javascript
+var obj = {
+  vals: [1, 2, 3],
+  logValues: function (v, i) {
+    console.log(this, v, i);
+  },
+};
+
+obj.logValues(1, 2); // {vals: Array(3), logValues: ƒ} 1 2
+[4, 5, 6].forEach(obj.logValues, obj); // obj를 전달하면 전역 객체를 바라보지 않음
+// result
+// {vals: Array(3), logValues: ƒ} 4 0
+// {vals: Array(3), logValues: ƒ} 5 1
+// {vals: Array(3), logValues: ƒ} 6 2
+```
 
 
 
