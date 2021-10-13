@@ -119,6 +119,39 @@ obj.logValues(1, 2); // {vals: Array(3), logValues: ƒ} 1 2
 
 
 
+## 콜백 함수 내부의 this에 다른 값 바인딩하기
+
+### 콜백 함수 내부의 this에 다른 값을 바인딩하는 방법
+
+```javascript
+var obj = {
+  name: 'obj',
+  func: function () {
+    var self = this;
+    return function () {
+      console.log(self.name);
+    };
+  },
+};
+
+var callback = obj.func();
+setTimeout(callback, 1000);
+```
+
+```javascript
+var obj = {
+  name: 'obj',
+  func: function () {
+    console.log(obj.name);
+  },
+};
+setTimeout(obj.func, 1000);
+```
+
+
+
+
+
 
 
 
