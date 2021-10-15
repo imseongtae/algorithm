@@ -221,22 +221,57 @@ setTimeout(obj.func.bind(copiedObj), 1500);
 - 웹 브라우저가 자체가 아닌 별도의 대상에 무언가를 요청하고, 그에 대한 응답이 왔을 때 비로소 어떤 함수를 실행하도록 대기하는 `XMLHttpRequest`
 
 #### 콜백 지옥 예시
+아래의 예제는 0.5초의 주기마다 커피 목록을 수집하고 출력하는 코드이다. 목적 달성에는 지장이 없지만 들여쓰기 수준이 깊고, 값의 전달 순서가 '아래에서 위로' 향하므로 어색한 점이 있다.
 
 ```javascript
-// callback
+setTimeout(function (name) {
+  var coffeeList = name;
+  console.log(coffeeList);
+
+  setTimeout(function (name) {
+    coffeeList += ', ' + name;
+    console.log(coffeeList);
+
+    setTimeout(function (name) {
+      coffeeList += ', ' + name;
+      console.log(coffeeList);
+
+      setTimeout(function (name) {
+        coffeeList += ', ' + name;
+        console.log(coffeeList);
+      }, 500, '카페라떼');
+    }, 500, '카페모카');
+  }, 500, '아메리카노');
+}, 500, '에스프레소');
 ```
 
+이를 해결하는 가장 간단한 방법은 **익명의 콜백 함수를 모두 기명함수로 전환**하는 것이다. 이를 통해 코드의 가독성을 높이고, 함수 선언과 함수 호출만 구분할 수 있다면 위에서부터 아래로 순서대로 읽는데 어려움이 없다. (변수가 노출되는 문제가 발생하지만 즉시 실행 함수 등으로 감싼다면 간단히 해결할 수 있음)
 
+```javascript
+var coffeeList = '';
 
+var addEspresso = function (name) {
+  coffeeList = name;
+  console.log(coffeeList);
+  setTimeout(addAmericano, 500, '아메리카노');
+};
+var addAmericano = function (name) {
+  coffeeList += ', ' + name;
+  console.log(coffeeList);
+  setTimeout(addMocha, 500, '카페모카');
+};
+var addMocha = function (name) {
+  coffeeList += ', ' + name;
+  console.log(coffeeList);
+  setTimeout(addLatte, 500, '카페라떼');
+};
+var addLatte = function (name) {
+  coffeeList += ', ' + name;
+  console.log(coffeeList);
+};
 
-
-
-
-
-
-
-
-
+setTimeout(addEspresso, 500, '에스프레소');
+```
 
 
 
