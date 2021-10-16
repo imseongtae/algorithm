@@ -6,6 +6,7 @@
 ## table of contents
 1. [제어권](#제어권)
 2. [콜백 함수는 함수다](#콜백-함수는-함수다)
+3. [콜백 지옥과 비동기 제어](#콜백-지옥과-비동기-제어)
 
 
 
@@ -271,6 +272,113 @@ var addLatte = function (name) {
 };
 
 setTimeout(addEspresso, 500, '에스프레소');
+```
+
+### 비동기 작업의 동기적 표현
+
+#### Promise
+ES6의 Promise를 이용해 비동기 작업을 동기적으로 표현할 수 있다. `new` 연산자와 함께 호출한 Promise의 인자로 넘겨주는 콜백 함수는 호출할 때 바로 실행되지만 그 내부에 `resolve` 또는 `reject` 함수를 호출하는 구문이 있을 경우 둘 중 하나가 실행되기 전까지는 `then` 또는 `catch` 구문으로 넘어가지 않는다.
+
+```javascript
+new Promise(function (resolve) {
+  setTimeout(function () {
+    var name = '에스프레소';
+    console.log(name);
+    resolve(name);
+  }, 500);
+})
+  .then(function (prevList) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var coffeeList = prevList + ', ' + '아메리카노';
+        console.log(coffeeList);
+        resolve(coffeeList);
+      }, 500);
+    });
+  })
+  .then(function (prevList) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var coffeeList = prevList + ', ' + '카페모카';
+        console.log(coffeeList);
+        resolve(coffeeList);
+      }, 500);
+    });
+  });
+```
+
+#### Promise + Closure
+
+위의 Promise 를 사용한 예제에서 클로저를 사용하면 반복적인 내용을 함수화해 짧게 표현할 수 있다.
+
+```javascript
+var addCoffee = function (name) {
+  return function (prevName) {
+    return new Promise(function (resolve) {
+      var coffeeList = prevName ? prevName + ', ' + name : name;
+      console.log(coffeeList);
+      resolve(coffeeList);
+    });
+  };
+};
+
+addCoffee('americano')()
+  .then(addCoffee('espresso'))
+  .then(addCoffee('mocha'))
+  .then(addCoffee('latte'));
+```
+
+#### Generator
+
+`*` 이 붙은 함수 `function*`가 **Generator 함수**이다. Generator를 실행하면 Iterator를 반환하는데, **Iterator**는 `next` 메서드를 가지고 있다. `next` 메서드를 호출하면 Generator 함수 내부에서 가장 먼저 등장하는 `yield`에서 함수의 실행을 멈춘다. 이후 다시 `next` 메서드를 호출하면 앞서 멈췄던 부분부터 시작해서 그 다음에 등장하는 `yield`에서 함수의 실행을 멈춘다. 
+
+```javascript
+var addCoffee = function (prevName, name) {
+  setTimeout(function () {
+    coffeeMaker.next(prevName ? prevName + ', ' + name : name);
+  }, 500);
+};
+
+var coffeeGenerator = function* () {
+  var espresso = yield addCoffee('', 'espress');
+  console.log(espresso);
+  var americano = yield addCoffee(espresso, 'americano');
+  console.log(americano);
+};
+
+var coffeeMaker = coffeeGenerator();
+coffeeMaker.next();
+```
+
+#### Promise + async/awiat
+
+비동기 작업을 수행하고자 하는 함수 앞에 `async`를 표기하고, 함수 내부에서 실질적인 비동기 작업이 필요한 위치마다 `await`를 표기하는 것만으로 뒤의 내용을 Promise로 자동 전환하고, 해당 내용이 `resolve`된 이후에야 다음으로 진행한다.
+
+```javascript
+var addCoffee = function (name) {
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      resolve(name);
+    }, 500);
+  });
+};
+
+var coffeeMaker = async function () {
+  var coffeeList = '';
+  var _addCoffee = async function (name) {
+    coffeeList += (coffeeList ? ', ' : '') + (await addCoffee(name));
+  };
+  await _addCoffee('espress');
+  console.log(coffeeList);
+  await _addCoffee('americano');
+  console.log(coffeeList);
+  await _addCoffee('latte');
+  console.log(coffeeList);
+  await _addCoffee('mocha');
+  console.log(coffeeList);
+};
+
+coffeeMaker();
 ```
 
 
