@@ -14,16 +14,20 @@ MDN(Mozilla Developer Network)에서는 클로저에 대해 "A closure is the co
 
 ### 외부 함수의 변수를 참조하는 내부 함수 예제
 
+#### 별도로 inner 함수를 호출할 수 없는 경우
+
 ```javascript
 var outer = function () {
   var a = 1;
   var inner = function () {
+    // inner에서는 a가 없으므로 outer의 LexicalEnvironment으로 접근
     console.log(++a);
   };
   inner();
+  // outer의 실행 컨텍스트가 종료되면 LexicalEnvironment에 대한 식별자 참조를 지움
 };
 
-outer();
+outer(); // 2
 ```
 
 ```javascript
@@ -33,11 +37,15 @@ var outer = function () {
     return ++a;
   };
   return inner();
+  // outer 함수의 실행 컨텍스트가 종료된 이후 a변수를 참조하는 대상이 없어짐
 };
 
 var closure = outer();
 console.log(closure);
 ```
+
+#### outer의 실행 컨텍스트가 종료된 이후에도 inner가 호출 가능한 경우
+inner 함수의 실행 시점에 outer 함수의 실행이 종료된 상태일지라도, 가비지 컬렉터의 동작 방식으로 인해 outer 함수의 LexicalEnvironment에 접근할 수 있다. 가비지 컬렉터는 어떤 값을 참조하는 변수가 하나라도 있다면 그 값은 수집 대상에 포함시키지 않는다. 
 
 ```javascript
 var outer = function () {
@@ -45,10 +53,19 @@ var outer = function () {
   var inner = function () {
     return ++a;
   };
+  // inner 함수 실행 결과를 반환
   return inner;
 };
 
+// closure 변수는 outer의 실행 결과를 참조
 var closure = outer();
 console.log(closure()); // 2
 console.log(closure()); // 3
 ```
+
+위의 예제에서 외부함수인 outer의 실행이 종료되더라도 내부함수인 inner는 언젠가 `closure`를 실행함으로써 호출될 가능성이 열리게 된다. 언젠가 inner 함수의 실행 컨텍스트가 활성화되면 outerEnvironmentReference가 outer 함수의 LexicalEnvironment를 필요하게 되므로 GC의 수집 대상에서 제외된다. 이러한 까닭에 inner 함수가 내부 변수에 접근할 수 있게 된다.
+
+
+---
+
+**[⬆ back to top](#table-of-contents)**
