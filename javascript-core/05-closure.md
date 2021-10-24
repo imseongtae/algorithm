@@ -5,6 +5,7 @@
 
 ## table of contents
 1. [클로저의 의미 및 원리 이해](#클로저의-의미-및-원리-이해)
+1. [클로저와 메모리 관리](#클로저와-메모리-관리)
 
 
 ## 클로저의 의미 및 원리 이해
@@ -67,9 +68,10 @@ console.log(closure()); // 3
 
 
 #### return이 없이 클로저가 발생하는 경우
-외부로의 전달이 return만을 의미하지 않는 경우가 있다.
+아래의 두 예제는 `return` 없이도 지역변수를 참조하는 내부함수를 외부로 전달하는 경우이다. 
 
 ```javascript
+// window의 메서드에 전달할 콜백함수 내부에서 지역변수를 참조
 (function () {
   var a = 0;
   var intervalId = null;
@@ -84,6 +86,7 @@ console.log(closure()); // 3
 ```
 
 ```javascript
+// 별도의 외부 객체인 DOM의 메서드에 등록할 handler 함수 내부에서 지역 변수 참조
 (function () {
   var count = 0;
   var $button = document.createElement('button');
@@ -99,3 +102,69 @@ console.log(closure()); // 3
 
 **[⬆ back to top](#table-of-contents)**
 
+
+## 클로저와 메모리 관리
+
+
+### 클로저의 메모리 관리 예제
+
+
+#### return에 의한 클로저의 메모리 해제
+
+```javascript
+var outer = (function () {
+  var a = 1;
+  var inner = function () {
+    return ++a;
+  };
+  return inner;
+})();
+
+console.log(outer());
+console.log(outer());
+outer = null; // outer 식별자의 inner 함수 참조를 끊음
+```
+
+#### setInterval에 의한 클로저의 메모리 해제
+
+```javascript
+(function () {
+  var a = 0;
+  var intervalId = null;
+  var inner = function () {
+    if (++a >= 10) {
+      clearInterval(intervalId);
+      inner = null; // inner 식별자의 함수 참조를 끊음
+    }
+    console.log(a);
+  };
+  intervalId = setInterval(inner, 250);
+})();
+```
+
+#### eventListener에 의한 클로저의 메모리 해제
+
+```javascript
+(function () {
+  var count = 0;
+  var $button = document.createElement('button');
+  $button.innerText = 'click';
+
+  var clickHandler = function () {
+    console.log(++count, 'times clicked');
+    if (count >= 10) {
+      $button.removeEventListener('click', clickHandler);
+      clickHandler = null; // clickHandler 식별자의 참조 함수를 끊음
+    }
+  };
+
+  $button.addEventListener('click', clickHandler);
+  document.body.appendChild($button);
+})();
+```
+
+
+
+---
+
+**[⬆ back to top](#table-of-contents)**
