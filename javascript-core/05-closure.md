@@ -6,6 +6,7 @@
 ## table of contents
 1. [클로저의 의미 및 원리 이해](#클로저의-의미-및-원리-이해)
 1. [클로저와 메모리 관리](#클로저와-메모리-관리)
+1. [클로저 활용 사례](#클로저-활용-사례)
 
 
 ## 클로저의 의미 및 원리 이해
@@ -104,10 +105,10 @@ console.log(closure()); // 3
 
 
 ## 클로저와 메모리 관리
-
+클로저는 객체지향과 함수형 모두를 아우르는 매우 중요한 개념이지만 메모리 누수의 위험을 이유로 클로저 사용을 지양해야 한다고 주장하는 사람들도 있다. 메모리 소모는 클로저의 본질적인 특성일 뿐이며, 개발자가 의도적으로 참조 카운트가 0이 되지 않도록 설계한 경우는 누수가 아니다.
 
 ### 클로저의 메모리 관리 예제
-
+클로저의 관리 방법은 간단하다. 클로저는 어떤 필요에 의해 함수의 지역변수가 의도적으로 메모리 소모를 일으키면서 발생하는데, 필요성이 사라진 시점에 더 이상 메모리를 소모하지 않도록 참조 카운트를 0으로 만들어 GC가 수거하도록 관리하면 된다. 참조 카운트를 0으로 만들기 위해선 식별자에 참조형이 아닌 기본형 데이터(`null`)를 할당하면 된다. 
 
 #### return에 의한 클로저의 메모리 해제
 
@@ -163,6 +164,32 @@ outer = null; // outer 식별자의 inner 함수 참조를 끊음
 })();
 ```
 
+---
+
+**[⬆ back to top](#table-of-contents)**
+
+
+## 클로저 활용 사례
+
+### 콜백 함수 내부에서 외부 데이터를 사용하고자 할 때
+
+#### 이벤트 리스너에 관한 예시
+
+```javascript
+var fruits = ['apple', 'banana', 'peach'];
+var $ul = document.createElement('ul');
+
+fruits.forEach(function (fruit) {
+  var $li = document.createElement('li');
+  $li.innerText = fruit;
+  $li.addEventListener('click', function () {
+    alert('your choice is ' + fruit);
+  });
+  $ul.appendChild($li);
+});
+
+document.body.appendChild($ul);
+```
 
 
 ---
