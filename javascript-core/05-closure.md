@@ -173,7 +173,7 @@ outer = null; // outer 식별자의 inner 함수 참조를 끊음
 
 ### 콜백 함수 내부에서 외부 데이터를 사용하고자 할 때
 
-#### 이벤트 리스너에 관한 예시
+#### 콜백 함수를 내부함수로 선언해서 외부변수를 참조하는 예시
 
 ```javascript
 var fruits = ['apple', 'banana', 'peach'];
@@ -191,6 +191,65 @@ fruits.forEach(function (fruit) {
 document.body.appendChild($ul);
 ```
 
+#### bind 활용 예시
+`alertFruit` 함수의 활용이 콜백 함수에 국한되지 않는다면 반복을 줄이기 위해 `alertFruit` 함수를 외부로 분리해야 하는 경우가 생길 수도 있다. 이 경우에는 bind 메서드나 고차함수를 활용할 수 있다.
+
+```javascript
+var fruits = ['apple', 'banana', 'peach'];
+var $ul = document.createElement('ul');
+
+var alertFruit = function (fruit) {
+  alert('your choice is ' + fruit);
+};
+
+fruits.forEach(function (fruit) {
+  var $li = document.createElement('li');
+  $li.innerText = fruit;
+  $li.addEventListener('click', alertFruit.bind(null, fruit));
+  $ul.appendChild($li);
+});
+
+document.body.appendChild($ul);
+```
+
+#### 콜백 함수 대신 고차함수를 활용한 클로저 활용 예시
+
+```javascript
+var fruits = ['apple', 'banana', 'peach'];
+var $ul = document.createElement('ul');
+
+var alertFruitBuilder = function (fruit) {
+  return function () {
+    alert('your choice is ' + fruit);
+  };
+};
+
+fruits.forEach(function (fruit) {
+  var $li = document.createElement('li');
+  $li.innerText = fruit;
+  $li.addEventListener('click', alertFruitBuilder(fruit));
+  $ul.appendChild($li);
+});
+
+document.body.appendChild($ul);
+```
+
+### 접근 권한 제어(정보 은닉)
+정보 은닉은 어떤 모듈의 내부 로직에 대해 외부로의 노출을 최소화해서 모듈간의 결합도를 낮추고 유연성을 높이고자 하는 현대 프로그래밍 언어의 중요한 개념 중 하나이다. 흔히 접근 권한에는 public, private, protected까지 세 종류가 있다. 
+
+```javascript
+var outer = function () {
+  var a = 1;
+  var inner = function () {
+    return ++a;
+  };
+  return inner;
+};
+
+var closure = outer();
+console.log(closure());
+console.log(closure());
+```
 
 ---
 
