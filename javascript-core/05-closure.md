@@ -235,7 +235,9 @@ document.body.appendChild($ul);
 ```
 
 ### 접근 권한 제어(정보 은닉)
-정보 은닉은 어떤 모듈의 내부 로직에 대해 외부로의 노출을 최소화해서 모듈간의 결합도를 낮추고 유연성을 높이고자 하는 현대 프로그래밍 언어의 중요한 개념 중 하나이다. 흔히 접근 권한에는 public, private, protected까지 세 종류가 있다. 
+정보 은닉은 어떤 모듈의 내부 로직에 대해 외부로의 노출을 최소화해서 모듈간의 결합도를 낮추고 유연성을 높이고자 하는 현대 프로그래밍 언어의 중요한 개념 중 하나이다. 흔히 접근 권한에는 public(외부에서 접근 가능), private(내부에서만 사용), protected까지 세 종류가 있다. 
+
+자바스크립트는 변수에 접근 권한을 부여하도록 설계되어 있지 않지만 클로저를 이용함녀 함수 차원에서 public한 값과 private한 값을 구분할 수 있다.
 
 ```javascript
 var outer = function () {
@@ -250,6 +252,68 @@ var closure = outer();
 console.log(closure());
 console.log(closure());
 ```
+
+### 클로저 변수를 보호하는 예제
+
+```javascript
+var car = {
+  fuel: Math.ceil(Math.random() * 10 + 10), // 연료(L)
+  power: Math.ceil(Math.random() * 3 + 2), // 연비(km / L)
+  moved: 0, // 총 이동거리
+  run: function () {
+    var km = Math.ceil(Math.random() * 6);
+    var wasteFuel = km / this.power;
+    if (this.fuel < wasteFuel) {
+      console.log('이동불가');
+      return;
+    }
+    this.fuel -= wasteFuel;
+    this.moved += km;
+    console.log(km + 'km 이동 (총 ' + this.moved + 'km)');
+  },
+};
+
+car.run();
+```
+
+위의 코드는 아래처럼 무작위로 정해지는 연료, 연비, 이동거리 등을 마음대로 바꿀 수 있다. 이러한 코드는 클로저를 활용해 객체가 아닌 함수로 만들고, 필요한 멤버만을 return하도록 바꿈으로써 값을 바꾸지 못하도록 방어할 수 있다.
+
+```javascript
+car.fuel = 1000;
+car.power = 100;
+car.moved = 1000;
+```
+
+#### 클로저로 변수를 보호하도록 바꾼 예제
+아래 예제는 `createCar` 함수를 실행하면 객체가 생성된다. `fuel`, `power` 변수는 비공개 멤버로 지정해 외부에서 접근을 제한했고, `moved` 변수는 `getter` 속성을 부여하여 읽기 전용 속성으로 설정했다. 이제 외부에서는 오직 `run` 메서드를 실행하는 것과 현재의 `moved` 값을 확인하는 두 가지 동작만 할 수 있다.
+
+```javascript
+var createCar = function () {
+  var fuel = Math.ceil(Math.random() * 10 + 10); // 연료(L)
+  var power = Math.ceil(Math.random() * 3 + 2); // 연비(km / L)
+  var moved = 0; // 총 이동거리
+  return {
+    get moved() {
+      return moved;
+    },
+    run: function () {
+      var km = Math.ceil(Math.random() * 6);
+      var wasteFuel = km / power;
+      if (fuel < wasteFuel) {
+        console.log('이동불가');
+        return;
+      }
+      fuel -= wasteFuel;
+      moved += km;
+      console.log(km + 'km 이동 (총 ' + moved + 'km)');
+    },
+  };
+};
+
+var car = createCar();
+car.run();
+```
+
 
 ---
 
